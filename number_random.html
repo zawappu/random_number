@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ランダム数字抽出</title>
+  <style>
+    body { font-family: sans-serif; display: flex; gap: 30px; }
+    #history, #unused { width: 250px; }
+    button { margin: 5px; }
+    table { border-collapse: collapse; }
+    td { width: 30px; height: 30px; text-align: center; border: 1px solid #ccc; }
+    .used { background-color: #eee; color: #aaa; }
+  </style>
+</head>
+<body>
+  <div>
+    <h2>抽出結果</h2>
+    <p id="result">--</p>
+    <button onclick="drawNumbers()">数字を抽出</button>
+    <button onclick="reset()">リセット</button>
+    <div id="history">
+      <h3>履歴</h3>
+      <ul id="log"></ul>
+    </div>
+  </div>
+
+  <div id="unused">
+    <h3>未使用の数字</h3>
+    <table id="unusedTable"></table>
+  </div>
+
+  <script>
+    const allNumbers = Array.from({length: 26}, (_, i) => i + 1);
+    let usedNumbers = new Set();
+    const forbiddenPairs = new Set(["13,17", "12,17"]); // 表示されない禁止ペア
+
+    function getPriorityNumbers() {
+      const nums = new Set();
+      for (const pair of forbiddenPairs) {
+        const [a, b] = pair.split(',').map(Number);
+        if (!usedNumbers.has(a)) nums.add(a);
+        if (!usedNumbers.has(b)) nums.add(b);
+      }
+      return Array.from(nums);
+    }
+
+    function drawNumbers() {
+      const available = allNumbers.filter(n => !usedNumbers.has(n));
+      if (available.length < 2) {
+        alert("残りの数字が1つ以下のため抽出できません");
+        return;
+      }
+
+      const priority = getPriorityNumbers();
+      const candidates = [];
+
+      for (let i = 0; i < available.length; i++) {
+        for (let j = i + 1; j < available.length; j++) {
+          const a = available[i], b = available[j];
+          const key = `${Math.min(a,b)},${Math.max(a,b)}`;
+          if (!forbiddenPairs.has(key)) {
+            const isPriority = priority.includes(a) || priority.includes(b);
+            candidates.push({pair: [a, b], priority: isPriority});
+          }
+        }
+      }
+
+      if (candidates.length === 0) {
+        alert("抽出可能なペアがありません");
+        return;
+      }
+
+      const priorityPairs = candidates.filter(c => c.priority);
+      const selected = (priorityPairs.length > 0)
+        ? priorityPairs[Math.floor(Math.random() * priorityPairs.length)]
+        : candidates[Math.floor(Math.random() * candidates.length)];
+
+      const [n1, n2] = selected.pair;
+      usedNumbers.add(n1);
+      usedNumbers.add(n2);
+
+      document.getElementById("result").textContent = `${n1} と ${n2}`;
+      const li = document.createElement("li");
+      li.textContent = `${n1} と ${n2}`;
+      document.getElementById("log").appendChild(li);
+
+      updateUnusedTable();
+    }
+
+    function updateUnusedTable() {
+      const table = document.getElementById("unusedTable");
+      table.innerHTML = "";
+      for (let row = 0; row < 6; row++) {
+        const tr = document.createElement("tr");
+        for (let col = 0; col < 6; col++) {
+          const num = row * 6 + col + 1;
+          const td = document.createElement("td");
+          td.textContent = num <= 26 ? num : "";
+          if (usedNumbers.has(num)) td.classList.add("used");
+          tr.appendChild(td);
+        }
+        table.appendChild(tr);
+      }
+    }
+
+    function reset() {
+      usedNumbers.clear();
+      document.getElementById("result").textContent = "--";
+      document.getElementById("log").innerHTML = "";
+      updateUnusedTable();
+    }
+
+    // 初期表示
+    updateUnusedTable();
+  </script>
+</body>
+</html>
