@@ -85,6 +85,7 @@
       document.getElementById("log").appendChild(li);
 
       updateUnusedTable();
+      saveState();
     }
 
     function updateUnusedTable() {
@@ -103,15 +104,43 @@
       }
     }
 
+    function saveState() {
+      localStorage.setItem("usedNumbers", JSON.stringify(Array.from(usedNumbers)));
+      const logItems = Array.from(document.querySelectorAll("#log li")).map(li => li.textContent);
+      localStorage.setItem("historyLog", JSON.stringify(logItems));
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem("usedNumbers");
+      if (saved) {
+        usedNumbers = new Set(JSON.parse(saved));
+      }
+
+      const log = localStorage.getItem("historyLog");
+      if (log) {
+        const items = JSON.parse(log);
+        const ul = document.getElementById("log");
+        ul.innerHTML = "";
+        items.forEach(text => {
+          const li = document.createElement("li");
+          li.textContent = text;
+          ul.appendChild(li);
+        });
+      }
+
+      updateUnusedTable();
+    }
+
     function reset() {
       usedNumbers.clear();
       document.getElementById("result").textContent = "--";
       document.getElementById("log").innerHTML = "";
+      localStorage.removeItem("usedNumbers");
+      localStorage.removeItem("historyLog");
       updateUnusedTable();
     }
 
-    // 初期表示
-    updateUnusedTable();
+    window.onload = loadState;
   </script>
 </body>
 </html>
