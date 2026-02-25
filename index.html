@@ -32,7 +32,7 @@
   <script>
     const allNumbers = Array.from({length: 26}, (_, i) => i + 1);
     let usedNumbers = new Set();
-    const forbiddenPairs = new Set(["13,17", "12,17"]); // 表示されない禁止ペア
+    const forbiddenPairs = new Set(); // 表示されない禁止ペア["13,17", "12,17"]のようにかく。
 
     function getPriorityNumbers() {
       const nums = new Set();
@@ -144,3 +144,4 @@
   </script>
 </body>
 </html>
+
